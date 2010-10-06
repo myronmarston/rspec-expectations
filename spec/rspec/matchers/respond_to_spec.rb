@@ -114,3 +114,81 @@ describe "should_not respond_to(:sym)" do
   end
   
 end
+
+describe "should_not respond_to(:sym).with(1).argument" do
+  it "fails if target responds to :sym with 1 arg" do
+    obj = Object.new
+    def obj.foo(arg); end
+    lambda {
+      obj.should_not respond_to(:foo).with(1).argument
+    }.should fail_with(/expected #<Object:.*> not to respond to :foo with 1 argument/)
+  end
+
+  it "passes if target does not respond to :sym" do
+    obj = Object.new
+    obj.should_not respond_to(:some_method).with(1).argument
+  end
+
+  it "passes if :sym expects 0 args" do
+    obj = Object.new
+    def obj.foo; end
+    obj.should_not respond_to(:foo).with(1).argument
+  end
+
+  it "passes if :sym expects 2 args" do
+    obj = Object.new
+    def obj.foo(arg, arg2); end
+    obj.should_not respond_to(:foo).with(1).argument
+  end
+end
+
+describe "should_not respond_to(message1, message2)" do
+  it "passes if target does not respond to either message1 or message2" do
+    Object.new.should_not respond_to(:some_method, :some_other_method)
+  end
+
+  it "fails if target responds to message1 but not message2" do
+    lambda {
+      Object.new.should_not respond_to(:object_id, :some_method)
+    }.should fail_with(/expected #<Object:.*> not to respond to :object_id/)
+  end
+
+  it "fails if target responds to message2 but not message1" do
+    lambda {
+      Object.new.should_not respond_to(:some_method, :object_id)
+    }.should fail_with(/expected #<Object:.*> not to respond to :object_id/)
+  end
+
+  it "fails if target responds to both message1 and message2" do
+    lambda {
+      Object.new.should_not respond_to(:class, :object_id)
+    }.should fail_with(/expected #<Object:.*> not to respond to :class, :object_id/)
+  end
+end
+
+describe "should_not respond_to(:sym).with(2).arguments" do
+  it "fails if target responds to :sym with 2 args" do
+    obj = Object.new
+    def obj.foo(a1, a2); end
+    lambda {
+      obj.should_not respond_to(:foo).with(2).arguments
+    }.should fail_with(/expected .* not to respond to :foo with 2 arguments/)
+  end
+
+  it "passes if target does not respond to :sym" do
+    obj = Object.new
+    obj.should_not respond_to(:some_method).with(2).arguments
+  end
+
+  it "passes if :sym expects 0 args" do
+    obj = Object.new
+    def obj.foo; end
+    obj.should_not respond_to(:foo).with(2).arguments
+  end
+
+  it "passes if :sym expects 2 args" do
+    obj = Object.new
+    def obj.foo(arg); end
+    obj.should_not respond_to(:foo).with(2).arguments
+  end
+end

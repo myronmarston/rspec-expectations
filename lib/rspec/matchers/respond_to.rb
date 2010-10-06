@@ -5,23 +5,22 @@ module RSpec
       def initialize(*names)
         @names = names
         @expected_arity = nil
-        @names_not_responded_to = []
       end
       
       def matches?(actual)
-        @actual = actual
-        @names.each do |name|
-          @names_not_responded_to << name unless actual.respond_to?(name) && matches_arity?(actual, name)
-        end
-        return @names_not_responded_to.empty?
+        find_failing_method_names(actual, :reject).empty?
+      end
+
+      def does_not_match?(actual)
+        find_failing_method_names(actual, :select).empty?
       end
       
       def failure_message_for_should
-        "expected #{@actual.inspect} to respond to #{@names_not_responded_to.collect {|name| name.inspect }.join(', ')}#{with_arity}"
+        "expected #{@actual.inspect} to respond to #{@failing_method_names.collect {|name| name.inspect }.join(', ')}#{with_arity}"
       end
       
       def failure_message_for_should_not
-        "expected #{@actual.inspect} not to respond to #{@names.collect {|name| name.inspect }.join(', ')}"
+        failure_message_for_should.sub(/to respond to/, 'not to respond to')
       end
       
       def description
@@ -39,6 +38,13 @@ module RSpec
       alias :arguments :argument
       
     private
+
+      def find_failing_method_names(actual, filter_method)
+        @actual = actual
+        @failing_method_names = @names.send(filter_method) do |name|
+          @actual.respond_to?(name) && matches_arity?(actual, name)
+        end
+      end
       
       def matches_arity?(actual, name)
         @expected_arity.nil?? true : @expected_arity == actual.method(name).arity 
