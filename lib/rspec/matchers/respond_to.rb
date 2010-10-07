@@ -47,7 +47,15 @@ module RSpec
       end
       
       def matches_arity?(actual, name)
-        @expected_arity.nil?? true : @expected_arity == actual.method(name).arity 
+        return true unless @expected_arity
+
+        actual_arity = actual.method(name).arity
+        if actual_arity < 0
+          # ~ inverts the one's complement and gives us the number of required args
+          ~actual_arity <= @expected_arity
+        else
+          actual_arity == @expected_arity
+        end
       end
       
       def with_arity
